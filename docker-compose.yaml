@@ -18,7 +18,7 @@ services:
 
   searxng:
     container_name: searxng
-    image: docker.io/searxng/searxng:${SEARXNG_VERSION:-latest}
+    image: docker.io/searxng/searxng:latest
     restart: always
     ports:
       - "0.0.0.0:3001:8080"
