@@ -1,2 +1,2 @@
 # Ignoring data created and managed by the containers
-./data
+/data
