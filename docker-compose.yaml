@@ -1,0 +1,36 @@
+# Local Frontend AI stack
+name: local-frontend-ai-stack
+
+services:
+  open-webui:
+    image: ghcr.io/open-webui/open-webui:main
+    ports:
+      - "0.0.0.0:3000:8080"
+    environment:
+      OPENAI_API_BASE_URL: "http://host.docker.internal:52625/v1" # FastFlowLM service
+      OPENAI_API_KEY: "local"
+      WEBUI_AUTH: "false"
+    volumes:
+      - ./data/open-webui/data:/app/backend/data
+    # Add custom host entry to allow internal container communication with the host's FastFlowLM service
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  searxng:
+    container_name: searxng
+    image: docker.io/searxng/searxng:${SEARXNG_VERSION:-latest}
+    restart: always
+    ports:
+      - "0.0.0.0:3001:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - ./data/searxng/core-config/:/etc/searxng/:rw
+      - ./data/searxng/data:/var/cache/searxng/
+
+  valkey:
+    container_name: valkey
+    image: docker.io/valkey/valkey:9-alpine
+    command: valkey-server --save 30 1 --loglevel warning
+    volumes:
+      - ./valkey/data:/data/:rw
