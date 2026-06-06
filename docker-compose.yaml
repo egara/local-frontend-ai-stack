@@ -47,7 +47,7 @@ services:
   # MCPs
   mcp-time:
     image: mekayelanik/time-mcp:stable
-    container_name: time-mcp
+    container_name: mcp-time
     ports:
       - "8060"
     environment:
@@ -65,6 +65,7 @@ services:
 
   mcp-searxng:
     image: isokoliuk/mcp-searxng:latest
+    container_name: mcp-searxng
     stdin_open: true
     ports:
       - "3000"
