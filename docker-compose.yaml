@@ -21,7 +21,6 @@ services:
   searxng:
     container_name: searxng
     image: docker.io/searxng/searxng:latest
-    restart: always
     ports:
       - "8080"
     extra_hosts:
