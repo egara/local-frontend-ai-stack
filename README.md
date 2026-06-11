@@ -6,12 +6,14 @@ All components communicate via `host.docker.internal`, ensuring seamless connect
 
 ## 🏗️ Architecture Overview
 
-This stack is built using **Docker Compose** to orchestrate three primary microservices:
+This stack is built using **Docker Compose** to orchestrate six primary microservices:
 
-1. **Open WebUI**: The user interface for interacting with AI models.
-2. **FastFlowLM (Host Service)**: A local Large Language Model running on the host machine, exposed via a specific API endpoint to the containerized UI.
-3. **SearXNG**: An open-source meta-search engine that aggregates results from various search providers locally.
+1. **Open WebUI**: The user interface for interacting with AI models, connecting to local LLMs via OpenAI-compatible API.
+2. **FastFlowLM/Ollama (Host Service)**: A local Large Language Model running on the host machine, accessible via `host.docker.internal`.
+3. **SearXNG**: An open-source meta-search engine that aggregates results from various search providers locally and remotely.
 4. **Valkey**: A high-performance in-memory data store (compatible with Redis) used for caching and session management within the stack.
+5. **Open Terminal**: Interactive terminal environment with access to host filesystems for development workflows.
+6. **MCP Services**: Model Context Protocol integrations including time queries and search capabilities via SearXNG integration.
 
 ## 📋 Service Details
 
@@ -24,14 +26,34 @@ The central interface for this AI ecosystem. It connects to local models via an 
 ### `searxng`
 A privacy-respecting search engine that indexes local and remote content.
 - **Image**: `docker.io/searxng/searxng:${SEARXNG_VERSION:-latest}` (Version is configurable via env var).
-- **Port Mapping**: Exposed on port `3001`.
+- **Port Mapping**: Internal port 8080, accessible from other containers via service name.
 - **Persistence**: Config files are mounted from `./data/searxng/core-config/`, and search data/cache resides in `./data/searxng/data`.
 
 ### `valkey`
 Provides a fast, reliable key-value store for the application stack.
 - **Image**: `docker.io/valkey/valkey:9-alpine`
 - **Configuration**: Runs with specific persistence settings (`--save 30 1`) and reduced logging verbosity.
-- **Persistence**: Data is stored in `./valkey/data`.
+- **Persistence**: Data is stored in `./data/valkey/data`.
+
+### `open-terminal`
+An interactive terminal environment for development tasks.
+- **Image**: `ghcr.io/open-webui/open-terminal:latest`
+- **Volume Mounts**: Access to `/home/egarcia/temp:/home/user` for file operations.
+- **Environment**: Configured with `OPEN_TERMINAL_API_KEY`.
+
+### MCP Services (Model Context Protocol)
+
+#### `mcp-time`
+Time and scheduling queries via Model Context Protocol.
+- **Image**: `mekayelanik/time-mcp:stable`
+- **Port Mapping**: Exposed on port 8060.
+- **Configuration**: HTTP protocol, no HTTPS, optimized for production with timezone set to Europe/Madrid.
+
+#### `mcp-searxng`
+Search integration via Model Context Protocol connecting to SearXNG.
+- **Image**: `isokoliuk/mcp-searxng:latest`
+- **Port Mapping**: Exposed on port 3000 (internal).
+- **Configuration**: Connects to SearXNG service at `http://searxng:8080`.
 
 ## 🛠️ Prerequisites
 
@@ -53,23 +75,22 @@ Before running this stack, ensure the following are installed on your system:
     mkdir -p ./data/open-webui/data ./data/searxng/core-config ./data/searxng/data ./valkey/data
     ```
 
-3. **Configure**:
+3.  **Configure**:
     Edit the **docker-compose.yaml** and adapt its configuration to your needs:
 
     - Versions of the images.
     - Volumes.
     - AI Backend (For my particular case, FastFlowLM has been used but you can configure Ollama for instance).
 
-4. **Start the Services**:
+4.  **Start the Services**:
     Navigate to the project directory and run:
     ```bash
     docker-compose up -d
     ```
 
-5. **Access the Applications**:
+5.  **Access the Applications**:
     Once started, open your browser:
     - **Open WebUI**: `http://localhost:3000` (or your host IP if not on localhost).
-    - **SearXNG**: `http://localhost:3001`.
 
 ## ⚙️ Configuration Notes
 
