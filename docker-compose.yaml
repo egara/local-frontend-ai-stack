@@ -36,13 +36,13 @@ services:
     volumes:
       - ./data/valkey/data:/data/:rw
 
-  open-terminal:
-    image: ghcr.io/open-webui/open-terminal:latest
-    container_name: open-terminal
-    volumes:
-      - /home/egarcia/temp:/home/user
-    environment:
-      - OPEN_TERMINAL_API_KEY=your-secret-key
+  # open-terminal:
+  #   image: ghcr.io/open-webui/open-terminal:latest
+  #   container_name: open-terminal
+  #   volumes:
+  #     - /home/egarcia/temp:/home/user
+  #   environment:
+  #     - OPEN_TERMINAL_API_KEY=your-secret-key
 
   # MCPs
   mcp-time:
